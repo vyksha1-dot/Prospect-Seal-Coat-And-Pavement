@@ -4,10 +4,40 @@ import { Send, CheckCircle2 } from "lucide-react";
 
 export default function QuoteForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name"),
+      phone: formData.get("phone"),
+      email: formData.get("email"),
+      service: formData.get("service"),
+      message: formData.get("message"),
+    };
+
+    try {
+      const response = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        throw new Error("Failed to send request");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again or call us directly.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (submitted) {
@@ -19,7 +49,7 @@ export default function QuoteForm() {
       >
         <CheckCircle2 className="w-16 h-16 text-brand-orange mb-4" />
         <h3 className="text-2xl font-bold mb-2">Request Received</h3>
-        <p className="text-road-white/60">Our estimator will contact you within 24 hours.</p>
+        <p className="text-road-white/60">Our estimator will contact you at your email or phone within 24 hours.</p>
         <button 
           onClick={() => setSubmitted(false)}
           className="mt-6 text-sm underline opacity-50 hover:opacity-100"
@@ -37,6 +67,7 @@ export default function QuoteForm() {
           <label className="technical-label">Client Name</label>
           <input 
             required
+            name="name"
             type="text" 
             placeholder="John Doe"
             className="w-full bg-asphalt-gray/20 border border-road-white/10 p-3 outline-none focus:border-brand-orange/50 transition-colors"
@@ -46,8 +77,19 @@ export default function QuoteForm() {
           <label className="technical-label">Phone Reference</label>
           <input 
             required
+            name="phone"
             type="tel" 
             placeholder="(555) 000-0000"
+            className="w-full bg-asphalt-gray/20 border border-road-white/10 p-3 outline-none focus:border-brand-orange/50 transition-colors"
+          />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <label className="technical-label">Email Address</label>
+          <input 
+            required
+            name="email"
+            type="email" 
+            placeholder="john@example.com"
             className="w-full bg-asphalt-gray/20 border border-road-white/10 p-3 outline-none focus:border-brand-orange/50 transition-colors"
           />
         </div>
@@ -55,7 +97,7 @@ export default function QuoteForm() {
 
       <div className="space-y-2">
         <label className="technical-label">Service Type</label>
-        <select className="w-full bg-asphalt-gray/20 border border-road-white/10 p-3 outline-none focus:border-brand-orange/50 transition-colors appearance-none">
+        <select name="service" className="w-full bg-asphalt-gray/20 border border-road-white/10 p-3 outline-none focus:border-brand-orange/50 transition-colors appearance-none">
           <option value="sealcoat">Full Sealcoat & Striping</option>
           <option value="crack-fill">Hot Lead Crack Filling</option>
           <option value="pothole">Pothole / Patch Repair</option>
@@ -67,14 +109,24 @@ export default function QuoteForm() {
       <div className="space-y-2">
         <label className="technical-label">Project Details / Square Footage</label>
         <textarea 
+          required
+          name="message"
           rows={4}
           placeholder="Describe the area size and current condition..."
           className="w-full bg-asphalt-gray/20 border border-road-white/10 p-3 outline-none focus:border-brand-orange/50 transition-colors resize-none"
         ></textarea>
       </div>
 
-      <button type="submit" className="btn-primary w-full justify-center">
-        Initialize Quote Request <Send className="w-4 h-4" />
+      {error && (
+        <p className="text-red-500 text-sm font-mono">{error}</p>
+      )}
+
+      <button 
+        type="submit" 
+        disabled={isLoading}
+        className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isLoading ? "Sending..." : "Initialize Quote Request"} <Send className="w-4 h-4 ml-2" />
       </button>
       
       <p className="text-[10px] text-center opacity-30 uppercase tracking-widest">

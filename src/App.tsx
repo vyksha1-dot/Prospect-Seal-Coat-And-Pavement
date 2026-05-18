@@ -176,7 +176,7 @@ export default function App() {
 
           <div className="pt-12 border-t border-road-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-[10px] uppercase tracking-widest text-road-white/20">
-              © 2026 Prospect Seal Coat And Pavement. All Rights Reserved.
+              © 2026 Prospect Seal Coat and Pavement. All Rights Reserved.
             </p>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
